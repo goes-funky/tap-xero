@@ -48,16 +48,17 @@ class XeroClient(object):
         self.access_token = config['access_token']
 
         self.refresh()
-        # Ensure credentials are valid
-        self.filter("currencies")
+
+        # Test credentials while getting tenants
+        self.tenants = self.get_tenants()
 
     def refresh(self):
         LOGGER.info("Refreshing credentials")
 
-        auth_token = self.client_id + ':' + self.client_secret
+        auth_token = base64.b64encode((self.client_id + ':' + self.client_secret).encode()).decode()
 
         headers = {
-            'Authorization': "Basic " + base64.b64encode(auth_token.encode()).decode(),
+            'Authorization': "Basic {}".format(auth_token),
             'Content-Type': 'application/x-www-form-urlencoded'
         }
 
@@ -69,7 +70,9 @@ class XeroClient(object):
 
         response = response.json()
 
-        LOGGER.info(response)
+        if response.get('error') == 'invalid_grant':
+            raise XeroUnauthorized("Cannot authenticate")
+
         # Update local copies
         self.access_token = response['access_token']
         self.refresh_token = response['refresh_token']
@@ -100,9 +103,7 @@ class XeroClient(object):
             headers["If-Modified-Since"] = since
 
         headers['Authorization'] = 'Bearer ' + self.access_token
-        import ipdb; ipdb.set_trace()
-        1+1
-        headers['Xero-tenant-id'] = foo
+        headers['Xero-tenant-id'] = self.tenants[0]['tenantId'] # TODO determine which tenant to choose instead of picking the first?
         
         request = requests.Request("GET", url, headers=headers, params=params)
         response = self.session.send(request.prepare())
@@ -124,7 +125,7 @@ class XeroClient(object):
         headers = {'Authorization': 'Bearer ' + self.access_token,
                    'Content-Type': 'application/json'}
 
-        response = requests.get(url, headers=self.headers)
+        response = requests.get(url, headers=headers)
 
         response.raise_for_status()
         return response.json()

@@ -1,5 +1,6 @@
 import singer
 from singer import bookmarks as bks_
+from singer.catalog import Catalog
 from .client import XeroClient
 
 
