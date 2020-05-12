@@ -14,6 +14,11 @@ setup(name="tap-xero",
           "requests==2.20.0",
           "boto3",
       ],
+      extras_require={
+          'dev': [
+              'ipdb==0.11',
+          ]
+      },
       entry_points="""
           [console_scripts]
           tap-xero=tap_xero:main
