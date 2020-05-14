@@ -8,7 +8,7 @@ class Context(object):
     def __init__(self, args):
         self.config = args.config
         self.state = args.state
-        self.catalog = Catalog.from_dict(args.properties) if args.properties else None
+        self.catalog = Catalog.from_dict(args.properties) if args.properties else Catalog([])
         self.client = XeroClient(self.config, args.config_path)
 
     def get_bookmark(self, path):
