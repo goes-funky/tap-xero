@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import os
-import json
+
 import singer
-from singer import metadata, metrics, utils
+from singer import metadata, utils
 from singer.catalog import Catalog, CatalogEntry, Schema
-from . import streams as streams_
-from .client import XeroClient
-from .context import Context
+
+from tap_xero import streams as streams_
+from tap_xero.client import XeroClient
+from tap_xero.context import Context
 
 REQUIRED_CONFIG_KEYS = [
     "start_date",
@@ -46,6 +47,7 @@ def load_schema(tap_stream_id):
         singer.resolve_schema_references(schema, refs)
     return schema
 
+
 def load_metadata(stream, schema):
     mdata = metadata.new()
 
@@ -66,6 +68,7 @@ def load_metadata(stream, schema):
 
 def ensure_credentials_are_valid(config):
     XeroClient(config).filter("currencies")
+
 
 def discover(ctx):
     ctx.check_platform_access()
@@ -112,7 +115,6 @@ def sync(ctx):
     ctx.write_state()
 
 
-
 def main_impl():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     if args.discover:
@@ -126,6 +128,7 @@ def main_impl():
             catalog = discover(Context(args.config, {}, {}, args.config_path))
 
         sync(Context(args.config, args.state, catalog, args.config_path))
+
 
 def main():
     try:

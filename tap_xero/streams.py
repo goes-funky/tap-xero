@@ -1,8 +1,9 @@
-from requests.exceptions import HTTPError
+import backoff
 import singer
+from requests.exceptions import HTTPError
 from singer import metadata, metrics, Transformer
 from singer.utils import strptime_with_tz
-import backoff
+
 from . import transform
 
 LOGGER = singer.get_logger()
@@ -42,11 +43,10 @@ def _make_request(ctx, tap_stream_id, filter_options=None, attempts=0):
         if e.response.status_code == 503:
             raise RateLimitException() from e
 
-        raise
-    assert False
+        raise HTTPError
 
 
-class Stream():
+class Stream:
     def __init__(self, tap_stream_id, pk_fields, bookmark_key="UpdatedDateUTC", format_fn=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
@@ -129,6 +129,7 @@ class Journals(Stream):
     """The Journals endpoint is a special case. It has its own way of ordering
     and paging the data. See
     https://developer.xero.com/documentation/api/journals"""
+
     def sync(self, ctx):
         bookmark = [self.tap_stream_id, self.bookmark_key]
         journal_number = ctx.get_bookmark(bookmark) or 0
@@ -151,6 +152,7 @@ class LinkedTransactions(Stream):
     the UpdatedDateUTC timestamp in them. Therefore we must always iterate over
     all of the data, but we can manually omit records based on the
     UpdatedDateUTC property."""
+
     def sync(self, ctx):
         bookmark = [self.tap_stream_id, self.bookmark_key]
         offset = [self.tap_stream_id, "page"]
