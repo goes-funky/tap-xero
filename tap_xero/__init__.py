@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
 import os
+from typing import List
 
 import singer
 from singer import metadata, utils
 from singer.catalog import Catalog, CatalogEntry, Schema
 
-from tap_xero import streams as streams_
+from tap_xero import streams as STREAMS
 from tap_xero.client import XeroClient
 from tap_xero.context import Context
 
@@ -13,7 +13,7 @@ REQUIRED_CONFIG_KEYS = [
     "start_date",
     "client_id",
     "client_secret",
-    "tenant_id",
+    "parent_id",
     "refresh_token",
 
 ]
@@ -71,9 +71,9 @@ def ensure_credentials_are_valid(config):
 
 
 def discover(ctx):
-    ctx.check_platform_access()
+    # ctx.check_platform_access()
     catalog = Catalog([])
-    for stream in streams_.all_streams:
+    for stream in STREAMS.all_streams:
         schema_dict = load_schema(stream.tap_stream_id)
         mdata = load_metadata(stream, schema_dict)
 
@@ -96,30 +96,41 @@ def load_and_write_schema(stream):
     )
 
 
-def sync(ctx):
-    ctx.refresh_credentials()
-    currently_syncing = ctx.state.get("currently_syncing")
-    start_idx = streams_.all_stream_ids.index(currently_syncing) \
-        if currently_syncing else 0
-    stream_ids_to_sync = [cs.tap_stream_id for cs in ctx.catalog.streams
-                          if cs.is_selected()]
-    streams = [s for s in streams_.all_streams[start_idx:]
-               if s.tap_stream_id in stream_ids_to_sync]
+def sync(context_: Context) -> None:
+    context_.refresh_credentials()
+
+    tenants: List[str] = context_.config['parent_id'].split(',')
+    for tenant in tenants:
+        context_.set_tenant(tenant)
+        context_.check_platform_access()
+
+    currently_syncing = context_.state.get("currently_syncing")
+    start_idx = STREAMS.all_stream_ids.index(currently_syncing) if currently_syncing else 0
+
+    stream_ids_to_sync = [cs.tap_stream_id for cs in context_.catalog.streams if cs.is_selected()]
+
+    streams = [
+        stream for stream in STREAMS.all_streams[start_idx:]
+        if stream.tap_stream_id in stream_ids_to_sync
+    ]
+
     for stream in streams:
-        ctx.state["currently_syncing"] = stream.tap_stream_id
-        ctx.write_state()
+        context_.state["currently_syncing"] = stream.tap_stream_id
+        context_.write_state()
         load_and_write_schema(stream)
         LOGGER.info("Syncing stream: %s", stream.tap_stream_id)
-        stream.sync(ctx)
-    ctx.state["currently_syncing"] = None
-    ctx.write_state()
+        for tenant_id in tenants:
+            context_.set_tenant(tenant_id)
+            stream.sync(context_)
+
+    context_.state["currently_syncing"] = None
+    context_.write_state()
 
 
 def main_impl():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     if args.discover:
         discover(Context(args.config, {}, {}, args.config_path)).dump()
-        print()
     else:
         if args.catalog:
             catalog = args.catalog

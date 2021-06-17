@@ -1,5 +1,6 @@
 import singer
 from singer import bookmarks as bks_
+
 from .client import XeroClient
 
 
@@ -10,6 +11,9 @@ class Context:
         self.state = state
         self.catalog = catalog
         self.client = XeroClient(config)
+
+    def set_tenant(self, tenant_id: str) -> None:
+        self.client.tenant_id = tenant_id
 
     def refresh_credentials(self):
         self.client.refresh_credentials(self.config, self.config_path)

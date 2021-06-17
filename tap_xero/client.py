@@ -1,21 +1,15 @@
-from base64 import b64encode
-import re
-import json
 import decimal
-import sys
-import math
+import json
+from base64 import b64encode
 from os.path import join
-from datetime import datetime, date, time, timedelta
-import requests
-from singer.utils import strftime, strptime_to_utc
-import six
-import pytz
+
 import backoff
+import requests
 import singer
 
 from tap_xero.client_utils import retry_after_wait_gen, is_not_status_code_fn, raise_for_error, update_config_file, \
     _json_load_object_hook
-from tap_xero.exceptions import XeroTooManyInMinuteError, XeroInternalError, XeroError
+from tap_xero.exceptions import XeroTooManyInMinuteError, XeroInternalError
 
 LOGGER = singer.get_logger()
 
@@ -26,7 +20,7 @@ class XeroClient:
     def __init__(self, config):
         self.session = requests.Session()
         self.user_agent = config.get("user_agent")
-        self.tenant_id = None
+        self.tenant_id = config['tenant_id']
         self.access_token = None
 
     def refresh_credentials(self, config, config_path):
@@ -53,22 +47,11 @@ class XeroClient:
             config['refresh_token'] = resp["refresh_token"]
             update_config_file(config, config_path)
             self.access_token = resp["access_token"]
-            self.tenant_id = self.get_tenants(self.access_token)
+            # self.tenant_id = config['tenant_id']
 
     @staticmethod
-    def get_tenants(access_token):
-        connections_url = 'https://api.xero.com/connections'
-        response = requests.get(connections_url,
-                                headers={
-                                    'Authorization': 'Bearer ' + access_token,
-                                    'Content-Type': 'application/json'
-                                })
-        json_response = response.json()
-
-        tenant_id = ''
-        for tenant in json_response:
-            tenant_id = tenant['tenantId']
-        return tenant_id
+    def get_tenants(parent: str) -> list:
+        return parent.split(',')
 
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
