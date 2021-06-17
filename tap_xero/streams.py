@@ -87,30 +87,30 @@ class PaginatedStream(Stream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def sync(self, ctx):
+    def sync(self, context):
         bookmark = [self.tap_stream_id, self.bookmark_key]
         offset = [self.tap_stream_id, "page"]
-        start = ctx.update_start_date_bookmark(bookmark)
-        curr_page_num = ctx.get_offset(offset) or 1
+        start = context.update_start_date_bookmark(bookmark)
+        curr_page_num = context.get_offset(offset) or 1
 
         self.filter_options.update(dict(since=start, order="UpdatedDateUTC ASC"))
 
         max_updated = start
         while True:
-            ctx.set_offset(offset, curr_page_num)
-            ctx.write_state()
+            context.set_offset(offset, curr_page_num)
+            context.write_state()
             self.filter_options["page"] = curr_page_num
-            records = _make_request(ctx, self.tap_stream_id, self.filter_options)
+            records = _make_request(context, self.tap_stream_id, self.filter_options)
             if records:
                 self.format_fn(records)
-                self.write_records(records, ctx)
+                self.write_records(records, context)
                 max_updated = records[-1][self.bookmark_key]
             if not records or len(records) < FULL_PAGE_SIZE:
                 break
             curr_page_num += 1
-        ctx.clear_offsets(self.tap_stream_id)
-        ctx.set_bookmark(bookmark, max_updated)
-        ctx.write_state()
+        context.clear_offsets(self.tap_stream_id)
+        context.set_bookmark(bookmark, max_updated)
+        context.write_state()
 
 
 class Contacts(PaginatedStream):
