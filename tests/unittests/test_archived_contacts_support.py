@@ -1,7 +1,8 @@
-import tap_xero.streams as stream_
 import unittest
-import requests
 from unittest import mock
+
+import tap_xero.streams as stream_
+
 
 class MockConfig:
     def __init__(self):
@@ -9,7 +10,7 @@ class MockConfig:
             "include_archived_contacts": "true"
         }
 
-    def update_start_date_bookmark(self,bookmark):
+    def update_start_date_bookmark(self, bookmark):
         return "2021-04-01"
 
     def get_offset(self, offset):
@@ -48,7 +49,6 @@ class TestSupportArchivedContacts(unittest.TestCase):
         # Verifying the parameters send to the _make_request method which is responsible for collecting data from the Xero platform
         mocked_make_request_method.assert_called_with(ctx, tap_stream_id, expected_filter_options)
 
-
     @mock.patch("tap_xero.streams._make_request")
     def test_archived_contacts_selected_boolean(self, mocked_make_request_method):
         mocked_make_request_method.return_value = []
@@ -66,7 +66,6 @@ class TestSupportArchivedContacts(unittest.TestCase):
 
         # Verifying the parameters send to the _make_request method which is responsible for collecting data from the Xero platform
         mocked_make_request_method.assert_called_with(ctx, tap_stream_id, expected_filter_options)
-
 
     @mock.patch("tap_xero.streams._make_request")
     def test_archived_contacts_not_selected(self, mocked_make_request_method):

@@ -1,7 +1,10 @@
-from tap_xero.client import parse_date
-from singer.utils import strptime_to_utc
-import unittest
 import datetime
+import unittest
+
+from singer.utils import strptime_to_utc
+
+from tap_xero.client import parse_date
+
 
 class TestDatetimeParsing(unittest.TestCase):
 

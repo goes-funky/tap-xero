@@ -1,10 +1,10 @@
 import os
-from datetime import datetime, timezone
 import unittest
-from singer import utils
+from datetime import datetime, timezone
 
 import tap_tester.connections as connections
 import tap_tester.menagerie as menagerie
+from singer import utils
 
 
 def preserve_refresh_token(existing_conns, payload):
@@ -13,6 +13,7 @@ def preserve_refresh_token(existing_conns, payload):
     conn_with_creds = connections.fetch_existing_connection_with_creds(existing_conns[0]['id'])
     payload['properties']['refresh_token'] = conn_with_creds['credentials']['refresh_token']
     return payload
+
 
 class XeroScenarioBase(unittest.TestCase):
     start_dt = datetime(2001, 1, 1, tzinfo=timezone.utc)
@@ -131,7 +132,7 @@ class XeroScenarioBase(unittest.TestCase):
 
     def get_properties(self):
         return {
-            "start_date" : self.start_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "start_date": self.start_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "tenant_id": os.getenv('TAP_XERO_TENANT_ID'),
             "xero_user_id": os.getenv('TAP_XERO_USER_ID'),
         }
@@ -172,7 +173,6 @@ class XeroScenarioBase(unittest.TestCase):
                 non_selected_fields=non_selected_properties
             )
 
-
     def select_specific_catalog(self, found_catalogs, catalog_to_select):
         for catalog in found_catalogs:
             if catalog['tap_stream_id'] != catalog_to_select:
@@ -187,7 +187,6 @@ class XeroScenarioBase(unittest.TestCase):
                 non_selected_fields=non_selected_properties
             )
             break
-
 
     def look_for_unexpected_bookmarks(self, bookmarks):
         diff = set(bookmarks).difference(self.expected_bookmarks)

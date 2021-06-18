@@ -2,6 +2,7 @@ import decimal
 import json
 from base64 import b64encode
 from os.path import join
+from typing import Union
 
 import backoff
 import requests
@@ -73,8 +74,8 @@ class XeroClient:
 
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
-                          jitter=None, max_tries=3)
-    def filter(self, tap_stream_id: str, since=None, **params) -> None:
+                          max_tries=3)
+    def filter(self, tap_stream_id: str, since=None, **params) -> Union[dict, None]:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)
         headers = {"Accept": "application/json",

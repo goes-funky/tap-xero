@@ -5,6 +5,7 @@ import tap_tester.runner as runner
 
 from base import XeroScenarioBase
 
+
 class XeroBookmarks(XeroScenarioBase):
     def name(self):
         return "tap_tester_xero_common_connection"
@@ -32,14 +33,14 @@ class XeroBookmarks(XeroScenarioBase):
                 self.assertIsNotNone(
                     bk_value,
                     msg="stream '{}' had no bookmark '{}' bookmarks: {}"
-                    .format(stream, bk_name, json.dumps(bookmarks, indent=2))
+                        .format(stream, bk_name, json.dumps(bookmarks, indent=2))
                 )
                 max_bk_found = max_bookmarks_from_records[stream]
                 self.assertEqual(
                     self.typify_bookmark(stream, bk_name, bk_value),
                     self.typify_bookmark(stream, bk_name, max_bk_found),
                     "Bookmark {} for stream {} should have been updated to {}"
-                    .format(bk_value, stream, max_bk_found)
+                        .format(bk_value, stream, max_bk_found)
                 )
                 print("bookmark {}({}) updated to {}"
                       .format(stream, bk_name, bk_value))

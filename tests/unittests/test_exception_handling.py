@@ -1,9 +1,10 @@
-import tap_xero.client as client_
-import unittest
-import requests
-from unittest import mock
-import decimal
 import json
+import unittest
+from unittest import mock
+
+import requests
+
+import tap_xero.client as client_
 
 
 def mocked_session(*args, **kwargs):
@@ -158,7 +159,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
         self.assertEqual(mocked_jsondecode_failing_request.call_count, 3)
         self.assertEqual(mocked_session.call_count, 3)
 
-
     @mock.patch('requests.Request', side_effect=mocked_jsondecode_successful_request)
     def test_normal_filter_execution(self, mocked_session, mocked_jsondecode_successful_request):
         config = {}
@@ -174,7 +174,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
 
         self.assertEqual(mocked_jsondecode_successful_request.call_count, 1)
         self.assertEqual(mocked_session.call_count, 1)
-
 
     @mock.patch('requests.Request', side_effect=mocked_badrequest_400_error)
     def test_badrequest_400_error(self, mocked_session, mocked_badrequest_400_error):
@@ -194,7 +193,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             pass
 
-
     @mock.patch('requests.Request', side_effect=mocked_unauthorized_401_error)
     def test_unauthorized_401_error(self, mocked_session, mocked_unauthorized_401_error):
         config = {}
@@ -213,7 +211,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             pass
 
-
     @mock.patch('requests.Request', side_effect=mocked_forbidden_403_exception)
     def test_forbidden_403_exception(self, mocked_session, mocked_forbidden_403_exception):
         config = {}
@@ -231,7 +228,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             pass
-
 
     @mock.patch('requests.Request', side_effect=mocked_notfound_404_error)
     def test_notfound_404_error(self, mocked_session, mocked_notfound_404_error):
@@ -287,7 +283,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             pass
 
-
     @mock.patch('requests.Request', side_effect=mocked_notimplemented_501_error)
     def test_notimplemented_501_error(self, mocked_session, mocked_notimplemented_501_error):
         config = {}
@@ -324,7 +319,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             pass
 
-
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_day)
     def test_too_many_requests_429_in_day_error(self, mocked_session, mocked_failed_429_request_in_day):
         config = {}
@@ -339,11 +333,10 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             filter_func_exec = xero_client.filter(tap_stream_id)
         except client_.XeroTooManyError as e:
             expected_error_message = "HTTP-error-code: 429, Error: The API rate limit for your organisation/application pairing has been exceeded. Please retry after 1000 seconds"
-            
+
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             pass
-
 
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_minute)
     def test_too_many_requests_429_in_minute_error(self, mocked_session, mocked_failed_429_request_in_minute):
@@ -359,11 +352,10 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
             filter_func_exec = xero_client.filter(tap_stream_id)
         except client_.XeroTooManyInMinuteError as e:
             expected_error_message = "HTTP-error-code: 429, Error: The API rate limit for your organisation/application pairing has been exceeded. Please retry after 5 seconds"
-            
+
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             pass
-
 
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_day)
     def test_too_many_requests_in_day_429_not_backoff_behavior(self, mocked_session, mocked_failed_429_request_in_day):
@@ -378,13 +370,13 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
         except (requests.HTTPError, client_.XeroTooManyError) as e:
             pass
 
-        #Verify daily limit should not backoff
+        # Verify daily limit should not backoff
         self.assertEqual(mocked_failed_429_request_in_day.call_count, 1)
         self.assertEqual(mocked_session.call_count, 1)
 
-
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_minute)
-    def test_too_many_requests_in_minute_429_backoff_behavior(self, mocked_session, mocked_failed_429_request_in_minute):
+    def test_too_many_requests_in_minute_429_backoff_behavior(self, mocked_session,
+                                                              mocked_failed_429_request_in_minute):
         config = {}
         tap_stream_id = "contacts"
 
@@ -416,7 +408,6 @@ class TestFilterFunExceptionHandling(unittest.TestCase):
         self.assertEqual(mocked_session.call_count, 3)
 
 
-
 @mock.patch('requests.Session.send', side_effect=mocked_session)
 class TestCheckPlatformAccessBehavior(unittest.TestCase):
 
@@ -436,12 +427,12 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             xero_client.check_platform_access(config, config_path)
         except client_.XeroUnauthorizedError as e:
             expected_message = "HTTP-error-code: 401, Error: Invalid authorization credentials."
-            self.assertEqual(str(e) ,expected_message)
-
+            self.assertEqual(str(e), expected_message)
 
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_forbidden_403_exception)
-    def test_check_forbidden_403_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_forbidden_403_exception):
+    def test_check_forbidden_403_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                         mocked_forbidden_403_exception):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -455,13 +446,13 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             xero_client.check_platform_access(config, config_path)
         except client_.XeroForbiddenError as e:
             expected_message = "HTTP-error-code: 403, Error: User doesn't have permission to access the resource."
-            self.assertEqual(str(e) ,expected_message)
-
+            self.assertEqual(str(e), expected_message)
 
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_badrequest_400_error)
-    def test_badrequest_400_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_badrequest_400_error):
-        
+    def test_badrequest_400_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                    mocked_badrequest_400_error):
+
         mocked_refresh_credentials.return_value = ""
         config = {}
         config_path = ""
@@ -476,10 +467,10 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 400, Error: A validation exception has occurred."
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_notfound_404_error)
-    def test_notfound_404_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_notfound_404_error):
+    def test_notfound_404_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                  mocked_notfound_404_error):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -495,11 +486,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 404, Error: The resource you have specified cannot be found."
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_precondition_failed_412_error)
-    def test_precondition_failed_412_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_precondition_failed_412_error):
-        
+    def test_precondition_failed_412_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                             mocked_precondition_failed_412_error):
+
         mocked_refresh_credentials.return_value = ""
         config = {}
         config_path = ""
@@ -513,11 +504,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
         except client_.XeroPreConditionFailedError as e:
             expected_message = "HTTP-error-code: 412, Error: One or more conditions given in the request header fields were invalid."
             self.assertEqual(str(e), expected_message)
-        
 
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_internalservererror_500_error)
-    def test_internalservererror_500_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_internalservererror_500_error):
+    def test_internalservererror_500_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                             mocked_internalservererror_500_error):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -533,10 +524,10 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 500, Error: An unhandled error with the Xero API. Contact the Xero API team if problems persist."
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_notimplemented_501_error)
-    def test_notimplemented_501_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_notimplemented_501_error):
+    def test_notimplemented_501_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                        mocked_notimplemented_501_error):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -552,11 +543,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 501, Error: The method you have called has not been implemented."
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_not_available_503_error)
-    def test_not_available_503_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_not_available_503_error):
-        
+    def test_not_available_503_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                       mocked_not_available_503_error):
+
         mocked_refresh_credentials.return_value = ""
         config = {}
         config_path = ""
@@ -571,11 +562,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 503, Error: API service is currently unavailable."
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_day)
-    def test_too_many_requests_in_day_429_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_failed_429_request_in_day):
-        
+    def test_too_many_requests_in_day_429_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                                  mocked_failed_429_request_in_day):
+
         mocked_refresh_credentials.return_value = ""
         config = {}
         config_path = ""
@@ -590,10 +581,10 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 429, Error: The API rate limit for your organisation/application pairing has been exceeded. Please retry after 1000 seconds"
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_minute)
-    def test_too_many_requests_in_minute_429_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_failed_429_request_in_minute):
+    def test_too_many_requests_in_minute_429_error_in_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                                     mocked_failed_429_request_in_minute):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -609,10 +600,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
             expected_message = "HTTP-error-code: 429, Error: The API rate limit for your organisation/application pairing has been exceeded. Please retry after 5 seconds"
             self.assertEqual(str(e), expected_message)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_day)
-    def test_too_many_requests_in_day_429_not_backoff_behavior_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_failed_429_request_in_day):
+    def test_too_many_requests_in_day_429_not_backoff_behavior_discovery_mode(self, mocked_refresh_credentials,
+                                                                              mocked_session,
+                                                                              mocked_failed_429_request_in_day):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -627,14 +619,15 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
         except (requests.HTTPError, client_.XeroTooManyError) as e:
             pass
 
-        #Verify daily limit should not backoff
+        # Verify daily limit should not backoff
         self.assertEqual(mocked_failed_429_request_in_day.call_count, 1)
         self.assertEqual(mocked_session.call_count, 1)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_failed_429_request_in_minute)
-    def test_too_many_requests_in_minute_429_backoff_behavior_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_failed_429_request_in_minute):
+    def test_too_many_requests_in_minute_429_backoff_behavior_discovery_mode(self, mocked_refresh_credentials,
+                                                                             mocked_session,
+                                                                             mocked_failed_429_request_in_minute):
 
         mocked_refresh_credentials.return_value = ""
         config = {}
@@ -652,11 +645,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
         self.assertEqual(mocked_failed_429_request_in_minute.call_count, 3)
         self.assertEqual(mocked_session.call_count, 3)
 
-
     @mock.patch("tap_xero.client.XeroClient.refresh_credentials")
     @mock.patch('requests.Request', side_effect=mocked_internalservererror_500_error)
-    def test_internalservererror_500_backoff_behaviour_discovery_mode(self, mocked_refresh_credentials, mocked_session, mocked_internalservererror_500_error):
-        
+    def test_internalservererror_500_backoff_behaviour_discovery_mode(self, mocked_refresh_credentials, mocked_session,
+                                                                      mocked_internalservererror_500_error):
+
         mocked_refresh_credentials.return_value = ""
         config = {}
         config_path = ""
@@ -673,11 +666,11 @@ class TestCheckPlatformAccessBehavior(unittest.TestCase):
         self.assertEqual(mocked_internalservererror_500_error.call_count, 3)
         self.assertEqual(mocked_session.call_count, 3)
 
-
     @mock.patch('requests.Session.post', side_effect=mock_successful_session_post)
     @mock.patch('tap_xero.client.update_config_file')
     @mock.patch('requests.Request', side_effect=mock_successful_request)
-    def test_check_success_200_in_discovery_mode(self, mock_successful_session_post, mocked_update_config_file, mocked_session, mock_successful_request):
+    def test_check_success_200_in_discovery_mode(self, mock_successful_session_post, mocked_update_config_file,
+                                                 mocked_session, mock_successful_request):
 
         mocked_update_config_file.return_value = ""
 

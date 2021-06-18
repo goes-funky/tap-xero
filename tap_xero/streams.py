@@ -7,20 +7,22 @@ from requests.exceptions import HTTPError
 from singer import metadata, metrics, Transformer
 from singer.utils import strptime_with_tz
 
-from . import transform, Context
+from tap_xero import transform
+from tap_xero.client import XeroClient
+from tap_xero.context import Context
 
 LOGGER = singer.get_logger()
 FULL_PAGE_SIZE = 100
 
 
-def _request_with_timer(tap_stream_id, xero, filter_options):
+def _request_with_timer(tap_stream_id: str, xero: XeroClient, filter_options: dict):
     with metrics.http_request_timer(tap_stream_id) as timer:
         try:
             resp = xero.filter(tap_stream_id, **filter_options)
             timer.tags[metrics.Tag.http_status_code] = 200
             return resp
-        except HTTPError as e:
-            timer.tags[metrics.Tag.http_status_code] = e.response.status_code
+        except HTTPError as error:
+            timer.tags[metrics.Tag.http_status_code] = error.response.status_code
             raise
 
 

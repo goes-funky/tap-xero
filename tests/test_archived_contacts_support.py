@@ -1,8 +1,9 @@
+import tap_tester.connections as connections
 import tap_tester.menagerie as menagerie
 import tap_tester.runner as runner
-import tap_tester.connections as connections
 
 from base import XeroScenarioBase, preserve_refresh_token
+
 
 class TestArchivedContacts(XeroScenarioBase):
 
@@ -36,7 +37,6 @@ class TestArchivedContacts(XeroScenarioBase):
         records = runner.get_upserts_from_target_output()
 
         return records
-
 
     def test_get_archived_contacts(self):
         # Tap-Xero be default will collect only active records

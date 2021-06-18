@@ -37,6 +37,7 @@ def strip_warnings(records):
     for record in records:
         record.pop("Warnings", None)
 
+
 format_users = strip_warnings
 
 
@@ -51,6 +52,7 @@ def format_contacts(contacts):
     strip_warnings(contacts)
     for contact in contacts:
         format_contact_groups(contact["ContactGroups"])
+
 
 def format_invoices(invoices):
     # NB: Xero sometimes formats the Date as '/Date(0+0000)/' to indicate

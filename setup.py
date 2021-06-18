@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+from setuptools import setup
 
 setup(name="tap-xero",
       version="2.2.0",
@@ -24,8 +24,8 @@ setup(name="tap-xero",
           tap-xero=tap_xero:main
       """,
       packages=["tap_xero"],
-      package_data = {
+      package_data={
           "schemas": ["tap_xero/schemas/*.json"]
       },
       include_package_data=True,
-)
+      )

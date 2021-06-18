@@ -3,7 +3,7 @@ import math
 import re
 import sys
 from datetime import datetime, date, time, timedelta
-from typing import Generator, Callable, Union
+from typing import Generator, Callable, Union, List
 
 import pytz
 import requests
@@ -73,7 +73,7 @@ def update_config_file(config: dict, config_path: str) -> None:
         json.dump(config, config_file, indent=2)
 
 
-def is_not_status_code_fn(status_code) -> Callable:
+def is_not_status_code_fn(status_code: List[int]) -> Callable:
     def gen_fn(exc) -> bool:
         if getattr(exc, 'response', None) and getattr(exc.response, 'status_code',
                                                       None) and exc.response.status_code not in status_code:
