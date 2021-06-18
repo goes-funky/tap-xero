@@ -3,11 +3,13 @@ import math
 import re
 import sys
 from datetime import datetime, date, time, timedelta
+from typing import Generator, Callable, Union
 
 import pytz
 import requests
 import singer
 import six
+from requests import Response
 from singer.utils import strftime, strptime_to_utc
 
 from tap_xero.exceptions import XeroError, ERROR_CODE_EXCEPTION_MAPPING, XeroTooManyInMinuteError
@@ -15,7 +17,7 @@ from tap_xero.exceptions import XeroError, ERROR_CODE_EXCEPTION_MAPPING, XeroToo
 LOGGER = singer.get_logger()
 
 
-def parse_date(value):
+def parse_date(value: str) -> Union[datetime, None]:
     # Xero datetimes can be .NET JSON date strings which look like
     # "/Date(1419937200000+0000)/"
     # https://developer.xero.com/documentation/api/requests-and-responses
@@ -46,11 +48,11 @@ def parse_date(value):
         offset_hours = 0
         offset_minutes = 0
 
-    return datetime.utcfromtimestamp((int(millis_timestamp) / 1000)) \
-           + timedelta(hours=offset_hours, minutes=offset_minutes)
+    return datetime.utcfromtimestamp((int(millis_timestamp) / 1000)) + timedelta(hours=offset_hours,
+                                                                                 minutes=offset_minutes)
 
 
-def _json_load_object_hook(_dict):
+def _json_load_object_hook(_dict: dict) -> dict:
     """Hook for json.parse(...) to parse Xero date formats."""
     # This was taken from the pyxero library and modified
     # to format the dates according to RFC3339
@@ -71,8 +73,8 @@ def update_config_file(config: dict, config_path: str) -> None:
         json.dump(config, config_file, indent=2)
 
 
-def is_not_status_code_fn(status_code):
-    def gen_fn(exc):
+def is_not_status_code_fn(status_code) -> Callable:
+    def gen_fn(exc) -> bool:
         if getattr(exc, 'response', None) and getattr(exc.response, 'status_code',
                                                       None) and exc.response.status_code not in status_code:
             return True
@@ -82,7 +84,7 @@ def is_not_status_code_fn(status_code):
     return gen_fn
 
 
-def retry_after_wait_gen():
+def retry_after_wait_gen() -> Generator:
     while True:
         # This is called in an except block so we can retrieve the exception
         # and check it.
@@ -93,23 +95,23 @@ def retry_after_wait_gen():
         yield math.floor(float(sleep_time_str))
 
 
-def raise_for_error(resp):
+def raise_for_error(response: Response) -> None:
     try:
-        resp.raise_for_status()
+        response.raise_for_status()
     except (requests.HTTPError, requests.ConnectionError) as error:
         try:
-            error_code = resp.status_code
+            error_code = response.status_code
 
             # Handling status code 429 specially since the required information is present in the headers
             if error_code == 429:
-                resp_headers = resp.headers
+                resp_headers = response.headers
                 api_rate_limit_message = ERROR_CODE_EXCEPTION_MAPPING[429]["message"]
-                message = "HTTP-error-code: 429, Error: {}. Please retry after {} seconds".format(
-                    api_rate_limit_message, resp_headers.get("Retry-After"))
+                message = "HTTP-error-code: 429, Error: {}. Please retry after {} seconds" \
+                    .format(api_rate_limit_message, resp_headers.get("Retry-After"))
 
                 # Raise XeroTooManyInMinuteError exception if minute limit is reached
                 if resp_headers.get("X-Rate-Limit-Problem") == 'minute':
-                    raise XeroTooManyInMinuteError(message, resp) from None
+                    raise XeroTooManyInMinuteError(message, response) from None
             # Handling status code 403 specially since response of API does not contain enough information
             elif error_code in (403, 401):
                 api_message = ERROR_CODE_EXCEPTION_MAPPING[error_code]["message"]
@@ -117,7 +119,7 @@ def raise_for_error(resp):
             else:
                 # Forming a response message for raising custom exception
                 try:
-                    response_json = resp.json()
+                    response_json = response.json()
                 except Exception:
                     response_json = {}
 
@@ -131,7 +133,7 @@ def raise_for_error(resp):
                             ))))
 
             exc = ERROR_CODE_EXCEPTION_MAPPING.get(error_code, {}).get("raise_exception", XeroError)
-            raise exc(message, resp) from None
+            raise exc(message, response) from None
 
         except (ValueError, TypeError):
             raise XeroError(error) from None
