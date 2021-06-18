@@ -42,7 +42,7 @@ class Context:
     def clear_offsets(self, tap_stream_id: str) -> None:
         bookmarks_.clear_offset(self.state, tap_stream_id)
 
-    def update_start_date_bookmark(self, path: List[str]):
+    def update_start_date_bookmark(self, path: List[str]) -> str:
         val = self.get_bookmark(path)
         if not val:
             val = self.config["start_date"]

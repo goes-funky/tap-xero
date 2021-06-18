@@ -15,12 +15,12 @@ LOGGER = singer.get_logger()
 FULL_PAGE_SIZE = 100
 
 
-def _request_with_timer(tap_stream_id: str, xero: XeroClient, filter_options: dict):
+def _request_with_timer(tap_stream_id: str, xero: XeroClient, filter_options: dict) -> List[dict]:
     with metrics.http_request_timer(tap_stream_id) as timer:
         try:
-            resp = xero.filter(tap_stream_id, **filter_options)
+            response = xero.filter(tap_stream_id, **filter_options)
             timer.tags[metrics.Tag.http_status_code] = 200
-            return resp
+            return response
         except HTTPError as error:
             timer.tags[metrics.Tag.http_status_code] = error.response.status_code
             raise
@@ -34,7 +34,7 @@ class RateLimitException(Exception):
                       RateLimitException,
                       max_tries=10,
                       factor=2)
-def _make_request(context, tap_stream_id, filter_options=None, attempts=0):
+def _make_request(context: Context, tap_stream_id: str, filter_options: dict = None, attempts: int = 0) -> List[dict]:
     filter_options = filter_options or {}
     try:
         return _request_with_timer(tap_stream_id, context.client, filter_options)
@@ -66,7 +66,7 @@ class Stream(ABC):
 
     def write_records(self, records: List[dict], context: Context) -> None:
         stream = context.catalog.get_stream(self.tap_stream_id)
-        schema = stream.schema.to_dict()
+        schema: dict = stream.schema.to_dict()
         meta_data = stream.metadata
         for rec in records:
             with Transformer() as transformer:
@@ -81,8 +81,8 @@ class Stream(ABC):
 class BookmarkedStream(Stream):
     def sync(self, context: Context) -> None:
         bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
-        start = context.update_start_date_bookmark(bookmark)
-        records = _make_request(context, self.tap_stream_id, dict(since=start))
+        start: str = context.update_start_date_bookmark(bookmark)
+        records: List[dict] = _make_request(context, self.tap_stream_id, dict(since=start))
         if records:
             self.format_fn(records)
             self.write_records(records, context)

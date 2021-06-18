@@ -2,7 +2,7 @@ import decimal
 import json
 from base64 import b64encode
 from os.path import join
-from typing import Union
+from typing import Union, List
 
 import backoff
 import requests
@@ -21,7 +21,7 @@ class XeroClient:
     def __init__(self, config: dict) -> None:
         self.session = requests.Session()
         self.user_agent = config.get("user_agent")
-        self.tenant_id = config['tenant_id']
+        self.tenant_id = None
         self.access_token = None
 
     def refresh_credentials(self, config: dict, config_path: str) -> None:
@@ -75,7 +75,7 @@ class XeroClient:
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
                           max_tries=3)
-    def filter(self, tap_stream_id: str, since=None, **params) -> Union[dict, None]:
+    def filter(self, tap_stream_id: str, since=None, **params) -> Union[List[dict], None]:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)
         headers = {"Accept": "application/json",
