@@ -32,16 +32,16 @@ class RateLimitException(Exception):
                       RateLimitException,
                       max_tries=10,
                       factor=2)
-def _make_request(ctx, tap_stream_id, filter_options=None, attempts=0):
+def _make_request(context, tap_stream_id, filter_options=None, attempts=0):
     filter_options = filter_options or {}
     try:
-        return _request_with_timer(tap_stream_id, ctx.client, filter_options)
+        return _request_with_timer(tap_stream_id, context.client, filter_options)
     except HTTPError as e:
         if e.response.status_code == 401:
             if attempts == 1:
                 raise Exception("Received Not Authorized response after credential refresh.") from e
-            ctx.refresh_credentials()
-            return _make_request(ctx, tap_stream_id, filter_options, attempts + 1)
+            context.refresh_credentials()
+            return _make_request(context, tap_stream_id, filter_options, attempts + 1)
 
         if e.response.status_code == 503:
             raise RateLimitException() from e
@@ -58,17 +58,17 @@ class Stream(ABC):
         self.replication_method = "INCREMENTAL"
         self.filter_options = {}
 
-    def metrics(self, records):
+    def metrics(self, records: List[dict]):
         with metrics.record_counter(self.tap_stream_id) as counter:
             counter.increment(len(records))
 
-    def write_records(self, records, ctx):
-        stream = ctx.catalog.get_stream(self.tap_stream_id)
+    def write_records(self, records: List[dict], context: Context) -> None:
+        stream = context.catalog.get_stream(self.tap_stream_id)
         schema = stream.schema.to_dict()
-        mdata = stream.metadata
+        meta_data = stream.metadata
         for rec in records:
             with Transformer() as transformer:
-                rec = transformer.transform(rec, schema, metadata.to_map(mdata))
+                rec = transformer.transform(rec, schema, metadata.to_map(meta_data))
                 singer.write_record(self.tap_stream_id, rec)
         self.metrics(records)
 
@@ -78,7 +78,7 @@ class Stream(ABC):
 
 class BookmarkedStream(Stream):
     def sync(self, context: Context) -> None:
-        bookmark = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
         start = context.update_start_date_bookmark(bookmark)
         records = _make_request(context, self.tap_stream_id, dict(since=start))
         if records:
@@ -94,7 +94,7 @@ class PaginatedStream(Stream):
         super().__init__(*args, **kwargs)
 
     def sync(self, context: Context) -> None:
-        bookmark = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
         offset = [self.tap_stream_id, "page"]
         start = context.update_start_date_bookmark(bookmark)
         curr_page_num = context.get_offset(offset) or 1
@@ -137,7 +137,7 @@ class Journals(Stream):
     https://developer.xero.com/documentation/api/journals"""
 
     def sync(self, context: Context) -> None:
-        bookmark = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
         journal_number = context.get_bookmark(bookmark) or 0
         while True:
             filter_options = {"offset": journal_number}
@@ -160,8 +160,8 @@ class LinkedTransactions(Stream):
     UpdatedDateUTC property."""
 
     def sync(self, context: Context) -> None:
-        bookmark = [self.tap_stream_id, self.bookmark_key]
-        offset = [self.tap_stream_id, "page"]
+        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
+        offset: List[str] = [self.tap_stream_id, "page"]
         start = context.update_start_date_bookmark(bookmark)
         curr_page_num = context.get_offset(offset) or 1
         max_updated = start

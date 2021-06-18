@@ -1,7 +1,7 @@
 from typing import List
 
 import singer
-from singer import bookmarks as bks_, Catalog
+from singer import bookmarks as bookmarks_, Catalog
 
 from .client import XeroClient
 
@@ -24,20 +24,23 @@ class Context:
         self.client.check_platform_access(self.config, self.config_path)
 
     def get_bookmark(self, path: List[str]):
-        return bks_.get_bookmark(self.state, *path)
+        return bookmarks_.get_bookmark(self.state, *path)
 
     def set_bookmark(self, path: List[str], val) -> None:
-        bks_.write_bookmark(self.state, path[0], path[1], val)
+        tap_stream_id, key = path
+        bookmarks_.write_bookmark(self.state, tap_stream_id, key, val)
 
     def get_offset(self, path: List[str]):
-        off = bks_.get_offset(self.state, path[0])
-        return (off or {}).get(path[1])
+        tap_stream_id, key = path
+        off = bookmarks_.get_offset(self.state, tap_stream_id)
+        return (off or {}).get(key)
 
     def set_offset(self, path: List[str], val) -> None:
-        bks_.set_offset(self.state, path[0], path[1], val)
+        tap_stream_id, key = path
+        bookmarks_.set_offset(self.state, tap_stream_id, key, val)
 
     def clear_offsets(self, tap_stream_id: str) -> None:
-        bks_.clear_offset(self.state, tap_stream_id)
+        bookmarks_.clear_offset(self.state, tap_stream_id)
 
     def update_start_date_bookmark(self, path: List[str]):
         val = self.get_bookmark(path)
