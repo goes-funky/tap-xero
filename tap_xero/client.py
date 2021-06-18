@@ -17,13 +17,13 @@ BASE_URL = "https://api.xero.com/api.xro/2.0"
 
 
 class XeroClient:
-    def __init__(self, config):
+    def __init__(self, config: dict) -> None:
         self.session = requests.Session()
         self.user_agent = config.get("user_agent")
         self.tenant_id = config['tenant_id']
         self.access_token = None
 
-    def refresh_credentials(self, config, config_path):
+    def refresh_credentials(self, config, config_path) -> None:
 
         header_token = b64encode((config["client_id"] + ":" + config["client_secret"]).encode('utf-8'))
 
@@ -49,14 +49,10 @@ class XeroClient:
             self.access_token = resp["access_token"]
             # self.tenant_id = config['tenant_id']
 
-    @staticmethod
-    def get_tenants(parent: str) -> list:
-        return parent.split(',')
-
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
                           jitter=None, max_tries=3)
-    def check_platform_access(self, config, config_path):
+    def check_platform_access(self, config, config_path) -> None:
 
         # Validating the authentication of the provided configuration
         self.refresh_credentials(config, config_path)
@@ -78,7 +74,7 @@ class XeroClient:
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
                           jitter=None, max_tries=3)
-    def filter(self, tap_stream_id, since=None, **params):
+    def filter(self, tap_stream_id, since=None, **params) -> None:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)
         headers = {"Accept": "application/json",
