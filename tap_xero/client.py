@@ -23,7 +23,7 @@ class XeroClient:
         self.tenant_id = config['tenant_id']
         self.access_token = None
 
-    def refresh_credentials(self, config, config_path) -> None:
+    def refresh_credentials(self, config: dict, config_path: str) -> None:
 
         header_token = b64encode((config["client_id"] + ":" + config["client_secret"]).encode('utf-8'))
 
@@ -52,7 +52,7 @@ class XeroClient:
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
                           jitter=None, max_tries=3)
-    def check_platform_access(self, config, config_path) -> None:
+    def check_platform_access(self, config: dict, config_path: str) -> None:
 
         # Validating the authentication of the provided configuration
         self.refresh_credentials(config, config_path)
@@ -74,7 +74,7 @@ class XeroClient:
     @backoff.on_exception(backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3)
     @backoff.on_exception(retry_after_wait_gen, XeroTooManyInMinuteError, giveup=is_not_status_code_fn([429]),
                           jitter=None, max_tries=3)
-    def filter(self, tap_stream_id, since=None, **params) -> None:
+    def filter(self, tap_stream_id: str, since=None, **params) -> None:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)
         headers = {"Accept": "application/json",
