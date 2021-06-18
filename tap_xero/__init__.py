@@ -8,6 +8,7 @@ from singer.catalog import Catalog, CatalogEntry, Schema
 from tap_xero import streams as STREAMS
 from tap_xero.client import XeroClient
 from tap_xero.context import Context
+from tap_xero.streams import Stream
 
 REQUIRED_CONFIG_KEYS = [
     "start_date",
@@ -70,7 +71,7 @@ def ensure_credentials_are_valid(config):
     XeroClient(config).filter("currencies")
 
 
-def discover(ctx):
+def discover(ctx: Context):
     # ctx.check_platform_access()
     catalog = Catalog([])
     for stream in STREAMS.all_streams:
@@ -107,9 +108,9 @@ def sync(context_: Context) -> None:
     currently_syncing = context_.state.get("currently_syncing")
     start_idx = STREAMS.all_stream_ids.index(currently_syncing) if currently_syncing else 0
 
-    stream_ids_to_sync = [cs.tap_stream_id for cs in context_.catalog.streams if cs.is_selected()]
+    stream_ids_to_sync: List[str] = [cs.tap_stream_id for cs in context_.catalog.streams if cs.is_selected()]
 
-    streams = [
+    streams: List[Stream] = [
         stream for stream in STREAMS.all_streams[start_idx:]
         if stream.tap_stream_id in stream_ids_to_sync
     ]
@@ -127,21 +128,23 @@ def sync(context_: Context) -> None:
     context_.write_state()
 
 
-def main_impl():
+def main_impl() -> None:
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
+    context_instance: Context = Context(args.config, {}, {}, args.config_path)
     if args.discover:
-        discover(Context(args.config, {}, {}, args.config_path)).dump()
+        discover(context_instance).dump()
     else:
         if args.catalog:
             catalog = args.catalog
         else:
             LOGGER.info("Running sync without provided Catalog. Discovering.")
-            catalog = discover(Context(args.config, {}, {}, args.config_path))
+            catalog = discover(context_instance)
 
-        sync(Context(args.config, args.state, catalog, args.config_path))
+        context_instance = Context(args.config, args.state, catalog, args.config_path)
+        sync(context_instance)
 
 
-def main():
+def main() -> None:
     try:
         main_impl()
     except Exception as exc:

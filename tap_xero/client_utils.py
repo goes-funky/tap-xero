@@ -66,7 +66,7 @@ def _json_load_object_hook(_dict):
     return _dict
 
 
-def update_config_file(config, config_path):
+def update_config_file(config: dict, config_path: str) -> None:
     with open(config_path, 'w') as config_file:
         json.dump(config, config_file, indent=2)
 

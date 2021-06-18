@@ -5,7 +5,7 @@ from .client import XeroClient
 
 
 class Context:
-    def __init__(self, config, state, catalog, config_path):
+    def __init__(self, config: dict, state, catalog, config_path: str):
         self.config = config
         self.config_path = config_path
         self.state = state

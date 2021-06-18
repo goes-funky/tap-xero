@@ -1,10 +1,13 @@
+from abc import ABC
+from typing import List
+
 import backoff
 import singer
 from requests.exceptions import HTTPError
 from singer import metadata, metrics, Transformer
 from singer.utils import strptime_with_tz
 
-from . import transform
+from . import transform, Context
 
 LOGGER = singer.get_logger()
 FULL_PAGE_SIZE = 100
@@ -46,7 +49,7 @@ def _make_request(ctx, tap_stream_id, filter_options=None, attempts=0):
         raise HTTPError
 
 
-class Stream:
+class Stream(ABC):
     def __init__(self, tap_stream_id, pk_fields, bookmark_key="UpdatedDateUTC", format_fn=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
@@ -69,25 +72,28 @@ class Stream:
                 singer.write_record(self.tap_stream_id, rec)
         self.metrics(records)
 
+    def sync(self, context: Context) -> None:
+        raise NotImplementedError("Implement this method!")
+
 
 class BookmarkedStream(Stream):
-    def sync(self, ctx):
+    def sync(self, context: Context) -> None:
         bookmark = [self.tap_stream_id, self.bookmark_key]
-        start = ctx.update_start_date_bookmark(bookmark)
-        records = _make_request(ctx, self.tap_stream_id, dict(since=start))
+        start = context.update_start_date_bookmark(bookmark)
+        records = _make_request(context, self.tap_stream_id, dict(since=start))
         if records:
             self.format_fn(records)
-            self.write_records(records, ctx)
+            self.write_records(records, context)
             max_bookmark_value = max([record[self.bookmark_key] for record in records])
-            ctx.set_bookmark(bookmark, max_bookmark_value)
-            ctx.write_state()
+            context.set_bookmark(bookmark, max_bookmark_value)
+            context.write_state()
 
 
 class PaginatedStream(Stream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def sync(self, context):
+    def sync(self, context: Context) -> None:
         bookmark = [self.tap_stream_id, self.bookmark_key]
         offset = [self.tap_stream_id, "page"]
         start = context.update_start_date_bookmark(bookmark)
@@ -117,12 +123,12 @@ class Contacts(PaginatedStream):
     def __init__(self, *args, **kwargs):
         super().__init__("contacts", ["ContactID"], format_fn=transform.format_contacts, *args, **kwargs)
 
-    def sync(self, ctx):
+    def sync(self, context: Context) -> None:
         # Parameter to collect archived contacts from the Xero platform
-        if ctx.config.get("include_archived_contacts") in ["true", True]:
+        if context.config.get("include_archived_contacts") in ["true", True]:
             self.filter_options.update({'includeArchived': "true"})
 
-        super().sync(ctx)
+        super().sync(context)
 
 
 class Journals(Stream):
@@ -130,18 +136,18 @@ class Journals(Stream):
     and paging the data. See
     https://developer.xero.com/documentation/api/journals"""
 
-    def sync(self, ctx):
+    def sync(self, context: Context) -> None:
         bookmark = [self.tap_stream_id, self.bookmark_key]
-        journal_number = ctx.get_bookmark(bookmark) or 0
+        journal_number = context.get_bookmark(bookmark) or 0
         while True:
             filter_options = {"offset": journal_number}
-            records = _make_request(ctx, self.tap_stream_id, filter_options)
+            records = _make_request(context, self.tap_stream_id, filter_options)
             if records:
                 self.format_fn(records)
-                self.write_records(records, ctx)
+                self.write_records(records, context)
                 journal_number = max((record[self.bookmark_key] for record in records))
-                ctx.set_bookmark(bookmark, journal_number)
-                ctx.write_state()
+                context.set_bookmark(bookmark, journal_number)
+                context.write_state()
             if not records or len(records) < FULL_PAGE_SIZE:
                 break
 
@@ -153,28 +159,28 @@ class LinkedTransactions(Stream):
     all of the data, but we can manually omit records based on the
     UpdatedDateUTC property."""
 
-    def sync(self, ctx):
+    def sync(self, context: Context) -> None:
         bookmark = [self.tap_stream_id, self.bookmark_key]
         offset = [self.tap_stream_id, "page"]
-        start = ctx.update_start_date_bookmark(bookmark)
-        curr_page_num = ctx.get_offset(offset) or 1
+        start = context.update_start_date_bookmark(bookmark)
+        curr_page_num = context.get_offset(offset) or 1
         max_updated = start
         while True:
-            ctx.set_offset(offset, curr_page_num)
-            ctx.write_state()
+            context.set_offset(offset, curr_page_num)
+            context.write_state()
             filter_options = {"page": curr_page_num}
-            raw_records = _make_request(ctx, self.tap_stream_id, filter_options)
+            raw_records = _make_request(context, self.tap_stream_id, filter_options)
             records = [x for x in raw_records
                        if strptime_with_tz(x[self.bookmark_key]) >= strptime_with_tz(start)]
             if records:
-                self.write_records(records, ctx)
+                self.write_records(records, context)
                 max_updated = records[-1][self.bookmark_key]
             if not records or len(records) < FULL_PAGE_SIZE:
                 break
             curr_page_num += 1
-        ctx.clear_offsets(self.tap_stream_id)
-        ctx.set_bookmark(bookmark, max_updated)
-        ctx.write_state()
+        context.clear_offsets(self.tap_stream_id)
+        context.set_bookmark(bookmark, max_updated)
+        context.write_state()
 
 
 class Everything(Stream):
@@ -183,13 +189,13 @@ class Everything(Stream):
         self.bookmark_key = None
         self.replication_method = "FULL_TABLE"
 
-    def sync(self, ctx):
-        records = _make_request(ctx, self.tap_stream_id)
+    def sync(self, context: Context) -> None:
+        records = _make_request(context, self.tap_stream_id)
         self.format_fn(records)
-        self.write_records(records, ctx)
+        self.write_records(records, context)
 
 
-all_streams = [
+all_streams: List[Stream] = [
     # PAGINATED STREAMS
     # These endpoints have all the best properties: they return the
     # UpdatedDateUTC property and support the Modified After, order, and page
@@ -235,4 +241,4 @@ all_streams = [
     # This endpoint is not paginated, but can do some manual filtering
     LinkedTransactions("linked_transactions", ["LinkedTransactionID"], bookmark_key="UpdatedDateUTC"),
 ]
-all_stream_ids = [s.tap_stream_id for s in all_streams]
+all_stream_ids: List[str] = [s.tap_stream_id for s in all_streams]
