@@ -3,7 +3,7 @@ import math
 import re
 import sys
 from datetime import datetime, date, time, timedelta
-from typing import Generator, Callable, Union, List
+from typing import Generator, Callable, Union, List, MutableMapping, Optional
 
 import pytz
 import requests
@@ -84,15 +84,23 @@ def is_not_status_code_fn(status_code: List[int]) -> Callable:
     return gen_fn
 
 
-def retry_after_wait_gen() -> Generator:
+def retry_after_wait_gen() -> Generator[float, int, None]:
+    """
+    This is called in an except block so we can retrieve the exception and check it.
+    The raised exception should be of type exceptions.XeroError and from that instance we get the response from request.
+    """
     while True:
         # This is called in an except block so we can retrieve the exception
         # and check it.
         exc_info = sys.exc_info()
-        resp = exc_info[1].response
-        sleep_time_str = resp.headers.get('Retry-After')
-        LOGGER.info("API rate limit exceeded -- sleeping for %s seconds", sleep_time_str)
-        yield math.floor(float(sleep_time_str))
+        exception_instance: Optional[XeroError, BaseException] = exc_info[1]
+        if isinstance(exception_instance, XeroError):
+            resp = exception_instance.response
+            sleep_time_str = resp.headers.get('Retry-After')
+            LOGGER.info("API rate limit exceeded -- sleeping for %s seconds", sleep_time_str)
+            yield math.floor(float(sleep_time_str))
+        else:
+            raise AttributeError('Exception does not have a response property.')
 
 
 def raise_for_error(response: Response) -> None:
@@ -100,13 +108,13 @@ def raise_for_error(response: Response) -> None:
         response.raise_for_status()
     except (requests.HTTPError, requests.ConnectionError) as error:
         try:
-            error_code = response.status_code
+            error_code: int = response.status_code
 
             # Handling status code 429 specially since the required information is present in the headers
             if error_code == 429:
-                resp_headers = response.headers
-                api_rate_limit_message = ERROR_CODE_EXCEPTION_MAPPING[429]["message"]
-                message = "HTTP-error-code: 429, Error: {}. Please retry after {} seconds" \
+                resp_headers: MutableMapping = response.headers
+                api_rate_limit_message: str = ERROR_CODE_EXCEPTION_MAPPING[429]["message"]
+                message: str = "HTTP-error-code: 429, Error: {}. Please retry after {} seconds" \
                     .format(api_rate_limit_message, resp_headers.get("Retry-After"))
 
                 # Raise XeroTooManyInMinuteError exception if minute limit is reached

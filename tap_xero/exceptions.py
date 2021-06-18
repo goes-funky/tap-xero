@@ -1,5 +1,8 @@
+from requests import Response
+
+
 class XeroError(Exception):
-    def __init__(self, message=None, response=None):
+    def __init__(self, message: str = None, response: Response = None):
         super().__init__(message)
         self.message = message
         self.response = response
