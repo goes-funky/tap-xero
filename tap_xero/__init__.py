@@ -1,3 +1,4 @@
+import argparse
 import os
 from typing import List
 
@@ -8,6 +9,7 @@ from singer.catalog import Catalog, CatalogEntry, Schema
 from tap_xero import streams as STREAMS
 from tap_xero.client import XeroClient
 from tap_xero.context import Context
+from tap_xero.custom import XeroCatalog
 from tap_xero.streams import Stream
 
 REQUIRED_CONFIG_KEYS = [
@@ -71,12 +73,12 @@ def ensure_credentials_are_valid(config):
     XeroClient(config).filter("currencies")
 
 
-def discover(ctx: Context):
-    # ctx.check_platform_access()
-    catalog = Catalog([])
+def discover() -> Catalog:
+    # ToDo Verify if context is required here to call check_platform_access()
+    catalog: Catalog = XeroCatalog()
     for stream in STREAMS.all_streams:
         schema_dict = load_schema(stream.tap_stream_id)
-        mdata = load_metadata(stream, schema_dict)
+        meta_data = load_metadata(stream, schema_dict)
 
         schema = Schema.from_dict(schema_dict)
         catalog.streams.append(CatalogEntry(
@@ -84,7 +86,7 @@ def discover(ctx: Context):
             tap_stream_id=stream.tap_stream_id,
             key_properties=stream.pk_fields,
             schema=schema,
-            metadata=mdata
+            metadata=meta_data
         ))
     return catalog
 
@@ -106,7 +108,7 @@ def sync(context_: Context) -> None:
         context_.check_platform_access()
 
     currently_syncing = context_.state.get("currently_syncing")
-    start_idx = STREAMS.all_stream_ids.index(currently_syncing) if currently_syncing else 0
+    start_idx: int = STREAMS.all_stream_ids.index(currently_syncing) if currently_syncing else 0
 
     stream_ids_to_sync: List[str] = [cs.tap_stream_id for cs in context_.catalog.streams if cs.is_selected()]
 
@@ -129,18 +131,23 @@ def sync(context_: Context) -> None:
 
 
 def main_impl() -> None:
-    args = utils.parse_args(REQUIRED_CONFIG_KEYS)
-    context_instance: Context = Context(args.config, {}, {}, args.config_path)
+    args: argparse.Namespace = utils.parse_args(REQUIRED_CONFIG_KEYS)
+    # context_instance: Context = Context(config=args.config,
+    #                                     catalog=XeroCatalog(),
+    #                                     config_path=args.config_path)
     if args.discover:
-        discover(context_instance).dump()
+        discover().dump()
     else:
         if args.catalog:
             catalog = args.catalog
         else:
             LOGGER.info("Running sync without provided Catalog. Discovering.")
-            catalog = discover(context_instance)
+            catalog = discover()
 
-        context_instance = Context(args.config, args.state, catalog, args.config_path)
+        context_instance = Context(config=args.config,
+                                   catalog=catalog,
+                                   config_path=args.config_path,
+                                   state=args.state)
         sync(context_instance)
 
 
