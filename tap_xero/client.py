@@ -14,7 +14,7 @@ from tap_xero.exceptions import XeroTooManyInMinuteError, XeroInternalError
 
 LOGGER = singer.get_logger()
 
-BASE_URL = "https://api.xero.com/api.xro/2.0"
+BASE_URL = "https://api.xero.com/"
 
 
 class XeroClient:
@@ -65,7 +65,7 @@ class XeroClient:
         }
 
         # Validating the authorization of the provided configuration
-        contacts_url = join(BASE_URL, "Contacts")
+        contacts_url = join(BASE_URL, "api.xro/2.0/Contacts")
         request = requests.Request("GET", contacts_url, headers=headers)
         response = self.session.send(request.prepare())
 
@@ -77,7 +77,12 @@ class XeroClient:
                           max_tries=3)
     def filter(self, tap_stream_id: str, since=None, **params) -> Union[List[dict], None]:
         xero_resource_name = tap_stream_id.title().replace("_", "")
-        url = join(BASE_URL, xero_resource_name)
+        from tap_xero.streams import XERO_APIS
+        xero_resource_path = XERO_APIS.get(tap_stream_id, None)
+        if not xero_resource_path:
+            raise NotImplementedError("{} is not added in XERO API endpoints".format(tap_stream_id))
+
+        url = join(BASE_URL, xero_resource_path, xero_resource_name)
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self.access_token,
                    "Xero-tenant-id": self.tenant_id}

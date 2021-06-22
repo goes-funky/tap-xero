@@ -212,6 +212,8 @@ all_streams: List[Stream] = [
     PaginatedStream("payments", ["PaymentID"], format_fn=transform.format_payments),
     PaginatedStream("prepayments", ["PrepaymentID"], format_fn=transform.format_over_pre_payments),
     PaginatedStream("purchase_orders", ["PurchaseOrderID"]),
+    # PaginatedStream("assets", ["assetId"]),
+    # PaginatedStream("asset_types", ["assetTypeId"]),
 
     # JOURNALS STREAM
     # This endpoint is paginated, but in its own special snowflake way.
@@ -238,9 +240,50 @@ all_streams: List[Stream] = [
     Everything("repeating_invoices", ["RepeatingInvoiceID"]),
     Everything("tax_rates", ["TaxType"]),
     Everything("tracking_categories", ["TrackingCategoryID"]),
+    Everything("assets", ["assetId"]),
+    Everything("asset_types", ["assetTypeId"]),
 
     # LINKED TRANSACTIONS STREAM
     # This endpoint is not paginated, but can do some manual filtering
     LinkedTransactions("linked_transactions", ["LinkedTransactionID"], bookmark_key="UpdatedDateUTC"),
 ]
 all_stream_ids: List[str] = [s.tap_stream_id for s in all_streams]
+
+account_api_path = "api.xro/2.0/"
+accounting_api = {
+    "bank_transactions": account_api_path,
+    "contacts": account_api_path,
+    "quotes": account_api_path,
+    "credit_notes": account_api_path,
+    "invoices": account_api_path,
+    "manual_journals": account_api_path,
+    "overpayments": account_api_path,
+    "payments": account_api_path,
+    "prepayments": account_api_path,
+    "purchase_orders": account_api_path,
+    "assets": account_api_path,
+    "journals": account_api_path,
+    "accounts": account_api_path,
+    "bank_transfers": account_api_path,
+    "employees": account_api_path,
+    "expense_claims": account_api_path,
+    "items": account_api_path,
+    "receipts": account_api_path,
+    "users": account_api_path,
+    "branding_themes": account_api_path,
+    "contact_groups": account_api_path,
+    "currencies": account_api_path,
+    "organisations": account_api_path,
+    "repeating_invoices": account_api_path,
+    "tax_rates": account_api_path,
+    "tracking_categories": account_api_path,
+    "linked_transactions": account_api_path,
+}
+
+assets_api_path = "assets.xro/1.0/"
+assets_api = {
+    "assets": assets_api_path,
+    "asset_types": assets_api_path
+}
+
+XERO_APIS = {**accounting_api, **assets_api}

@@ -1,0 +1,174 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "assetId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "assetName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "assetNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "purchaseDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "purchasePrice": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "serialNumber": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "warrantyExpiryDate": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "assetTypeId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "description": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "disposalPrice": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "assetStatus": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "bookDepreciationSetting": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "depreciationMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "averagingMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "depreciationRate": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "depreciationCalculationMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "bookDepreciationDetail": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "currentCapitalGain": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "currentGainLoss": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "depreciationStartDate": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        },
+        "costLimit": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "residualValue": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "priorAccumDepreciationAmount": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "currentAccumDepreciationAmount": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "canRollback": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    },
+    "accountingBookValue": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

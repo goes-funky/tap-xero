@@ -1,0 +1,117 @@
+{
+  "type": [
+    "null",
+    "object"
+  ],
+  "properties": {
+    "assetTypeId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "assetTypeName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "fixedAssetAccountId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "depreciationExpenseAccountId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "accumulatedDepreciationAccountId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "bookDepreciationSetting": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "depreciableObjectId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "depreciableObjectType": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "bookEffectiveDateOfChangeId": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "depreciationMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "averagingMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "depreciationRate": {
+          "type": [
+            "null",
+            "integer"
+          ]
+        },
+        "depreciationCalculationMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "taxDepreciationSettings": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+        },
+        "additionalProperties": true
+      }
+    },
+    "locks": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "lockPrivateUseAccount": {
+      "type": [
+        "null",
+        "boolean"
+      ]
+    }
+  },
+  "additionalProperties": true
+}
