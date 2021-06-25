@@ -101,5 +101,9 @@ class XeroClient:
             response_meta = json.loads(response.text,
                                        object_hook=_json_load_object_hook,
                                        parse_float=decimal.Decimal)
-            response_body = response_meta.pop(xero_resource_name)
+
+            if isinstance(response, dict):
+                response_body = response_meta.pop(xero_resource_name)
+            else:
+                response_body = response_meta
             return response_body
