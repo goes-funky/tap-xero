@@ -86,7 +86,9 @@ def discover() -> Catalog:
             tap_stream_id=stream.tap_stream_id,
             key_properties=stream.pk_fields,
             schema=schema,
-            metadata=meta_data
+            metadata=meta_data,
+            replication_key=stream.bookmark_key,
+            replication_method=stream.replication_method,
         ))
     return catalog
 
