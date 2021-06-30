@@ -51,38 +51,38 @@ class XeroNotAvailableError(XeroError):
 ERROR_CODE_EXCEPTION_MAPPING = {
     400: {
         "raise_exception": XeroBadRequestError,
-        "message": "A validation exception has occurred."
+        "message": "A validation exception has occurred.",
     },
     401: {
         "raise_exception": XeroUnauthorizedError,
-        "message": "Invalid authorization credentials."
+        "message": "Invalid authorization credentials.",
     },
     403: {
         "raise_exception": XeroForbiddenError,
-        "message": "User doesn't have permission to access the resource."
+        "message": "User doesn't have permission to access the resource.",
     },
     404: {
         "raise_exception": XeroNotFoundError,
-        "message": "The resource you have specified cannot be found."
+        "message": "The resource you have specified cannot be found.",
     },
     412: {
         "raise_exception": XeroPreConditionFailedError,
-        "message": "One or more conditions given in the request header fields were invalid."
+        "message": "One or more conditions given in the request header fields were invalid.",
     },
     429: {
         "raise_exception": XeroTooManyError,
-        "message": "The API rate limit for your organisation/application pairing has been exceeded"
+        "message": "The API rate limit for your organisation/application pairing has been exceeded",
     },
     500: {
         "raise_exception": XeroInternalError,
-        "message": "An unhandled error with the Xero API. Contact the Xero API team if problems persist."
+        "message": "An unhandled error with the Xero API. Contact the Xero API team if problems persist.",
     },
     501: {
         "raise_exception": XeroNotImplementedError,
-        "message": "The method you have called has not been implemented."
+        "message": "The method you have called has not been implemented.",
     },
     503: {
         "raise_exception": XeroNotAvailableError,
-        "message": "API service is currently unavailable."
-    }
+        "message": "API service is currently unavailable.",
+    },
 }

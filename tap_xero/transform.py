@@ -61,8 +61,8 @@ def format_invoices(invoices):
     # inconsitencies because the 'Date' is normally returned as an iso8601
     # string and this edge case causes it to be returned differently
     for invoice in invoices:
-        if invoice.get('Date') == '/Date(0+0000)/':
-            invoice['Date'] = '1970-01-01T00:00:00.000000Z'
+        if invoice.get("Date") == "/Date(0+0000)/":
+            invoice["Date"] = "1970-01-01T00:00:00.000000Z"
 
 
 def format_journals(journals):
@@ -73,5 +73,5 @@ def format_journals(journals):
     # iso8601 string and this edge case causes it to be returned
     # differently
     for journal in journals:
-        if journal.get('JournalDate') == '/Date(0+0000)/':
-            journal['JournalDate'] = '1970-01-01T00:00:00.000000Z'
+        if journal.get("JournalDate") == "/Date(0+0000)/":
+            journal["JournalDate"] = "1970-01-01T00:00:00.000000Z"
