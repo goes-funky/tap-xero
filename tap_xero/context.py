@@ -4,6 +4,7 @@ import singer
 from singer import bookmarks as bookmarks_, Catalog
 
 from .client import XeroClient
+from .custom_bookmarks import ensure_bookmark_path
 
 
 class Context:
@@ -40,7 +41,8 @@ class Context:
         bookmarks_.set_offset(self.state, tap_stream_id, key, val)
 
     def clear_offsets(self, tap_stream_id: str) -> None:
-        bookmarks_.clear_offset(self.state, tap_stream_id)
+        state = ensure_bookmark_path(self.state, ['bookmarks', tap_stream_id, "offset"])
+        state['bookmarks'][tap_stream_id].pop("offset")
 
     def update_start_date_bookmark(self, path: List[str]) -> str:
         val = self.get_bookmark(path)
