@@ -1,6 +1,5 @@
 import decimal
 import json
-from base64 import b64encode
 from os.path import join
 from typing import Union, List
 
@@ -30,34 +29,13 @@ class XeroClient:
         self.access_token = None
 
     def refresh_credentials(self, config: dict, config_path: str) -> None:
+        from custom import refresh_token
 
-        header_token = b64encode(
-            (config["client_id"] + ":" + config["client_secret"]).encode("utf-8")
-        )
-
-        headers = {
-            "Authorization": "Basic " + header_token.decode("utf-8"),
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-
-        post_body = {
-            "grant_type": "refresh_token",
-            "refresh_token": config["refresh_token"],
-        }
-        resp = self.session.post(
-            "https://identity.xero.com/connect/token", headers=headers, data=post_body
-        )
-
-        if resp.status_code != 200:
-            raise_for_error(resp)
-        else:
-            resp = resp.json()
-
-            # Write to config file
-            config["refresh_token"] = resp["refresh_token"]
-            update_config_file(config, config_path)
-            self.access_token = resp["access_token"]
-            # self.tenant_id = config['tenant_id']
+        response = refresh_token(config, self.session)
+        # Write to config file
+        config["refresh_token"] = response["refresh_token"]
+        update_config_file(config, config_path)
+        self.access_token = response["access_token"]
 
     @backoff.on_exception(
         backoff.expo, (json.decoder.JSONDecodeError, XeroInternalError), max_tries=3
