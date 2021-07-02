@@ -146,7 +146,7 @@ def sync(context_: Context) -> None:
     context_.write_state()
 
     # Get a new refresh token and sent it to DataSource API
-    from custom import refresh_token, write_secrets
+    from tap_xero.custom import refresh_token, write_secrets
 
     response = refresh_token(context_.config)
     config = context_.config
