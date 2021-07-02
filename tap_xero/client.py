@@ -77,7 +77,7 @@ class XeroClient:
         max_tries=3,
     )
     def filter(
-            self, tap_stream_id: str, since=None, **params
+        self, tap_stream_id: str, since=None, **params
     ) -> Union[List[dict], None]:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)

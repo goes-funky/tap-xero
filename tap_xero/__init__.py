@@ -112,13 +112,6 @@ def load_and_write_schema(stream):
 def sync(context_: Context) -> None:
     # Get 30 minutes valid refresh token to be consumed
     context_.refresh_credentials()
-    # Get a new refresh token and sent it to DataSource API
-    from custom import refresh_token, write_secrets
-
-    response = refresh_token(context_.config)
-    config = context_.config
-    config["refresh_token"] = response["refresh_token"]
-    write_secrets(config)
 
     tenants: List[str] = context_.config["parent_id"].split(",")
     for tenant in tenants:
@@ -151,6 +144,14 @@ def sync(context_: Context) -> None:
 
     context_.state["currently_syncing"] = None
     context_.write_state()
+
+    # Get a new refresh token and sent it to DataSource API
+    from custom import refresh_token, write_secrets
+
+    response = refresh_token(context_.config)
+    config = context_.config
+    config["refresh_token"] = response["refresh_token"]
+    write_secrets(config)
 
 
 def main_impl() -> None:
