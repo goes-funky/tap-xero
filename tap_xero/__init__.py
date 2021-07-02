@@ -156,9 +156,7 @@ def sync(context_: Context) -> None:
 
 def main_impl() -> None:
     args: argparse.Namespace = utils.parse_args(REQUIRED_CONFIG_KEYS)
-    # context_instance: Context = Context(config=args.config,
-    #                                     catalog=XeroCatalog(),
-    #                                     config_path=args.config_path)
+
     if args.discover:
         discover().dump()
     else:
