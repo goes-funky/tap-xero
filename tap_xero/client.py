@@ -34,6 +34,7 @@ class XeroClient:
         response = refresh_token(config, self.session)
         # Write to config file
         config["refresh_token"] = response["refresh_token"]
+        config["access_token"] = response["access_token"]
         update_config_file(config, config_path)
         self.access_token = response["access_token"]
 
