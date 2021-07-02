@@ -48,7 +48,7 @@ def write_secrets(config: dict) -> None:
 
     secrets = {
         "type": "CREDENTIALS_CHANGED",
-        "secrets": {
+        "secret": {
             "access_token": config["access_token"],
             "refresh_token": config["refresh_token"],
             "token_type": "Bearer",
