@@ -29,7 +29,7 @@ class XeroClient:
         self.access_token = None
 
     def refresh_credentials(self, config: dict, config_path: str) -> None:
-        from custom import refresh_token
+        from tap_xero.custom import refresh_token
 
         response = refresh_token(config, self.session)
         # Write to config file
@@ -76,7 +76,7 @@ class XeroClient:
         max_tries=3,
     )
     def filter(
-        self, tap_stream_id: str, since=None, **params
+            self, tap_stream_id: str, since=None, **params
     ) -> Union[List[dict], None]:
         xero_resource_name = tap_stream_id.title().replace("_", "")
         url = join(BASE_URL, xero_resource_name)

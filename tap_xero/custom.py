@@ -51,7 +51,7 @@ def write_secrets(config: dict) -> None:
         "secrets": {
             "access_token": config["access_token"],
             "refresh_token": config["refresh_token"],
-            "token_type": "bearer",
+            "token_type": "Bearer",
         },
     }
     message = json.dumps(secrets)
