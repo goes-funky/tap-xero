@@ -95,7 +95,7 @@ class BookmarkedStream(Stream):
             self.write_records(records, context)
             max_bookmark_value = max([record[self.bookmark_key] for record in records])
             context.set_bookmark(bookmark, max_bookmark_value)
-            context.write_state()
+            context.write_state(final=True)
 
 
 class PaginatedStream(Stream):
@@ -125,7 +125,7 @@ class PaginatedStream(Stream):
             curr_page_num += 1
         context.clear_offsets(self.tap_stream_id)
         context.set_bookmark(bookmark, max_updated)
-        context.write_state()
+        context.write_state(final=True)
 
 
 class Contacts(PaginatedStream):

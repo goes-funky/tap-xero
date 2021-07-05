@@ -1,6 +1,8 @@
+from datetime import timedelta
 from typing import List
 
 import singer
+from dateutil.parser import isoparse
 from singer import bookmarks as bookmarks_, Catalog
 
 from .client import XeroClient
@@ -54,5 +56,24 @@ class Context:
             self.set_bookmark(path, val)
         return val
 
-    def write_state(self) -> None:
+    def write_state(self, final: bool = False) -> None:
+        bookmarks = self.state.get("bookmarks")
+        if final:
+            if bookmarks:
+                current_sync = self.state.get("currently_syncing")
+                state = bookmarks.get(current_sync)
+
+                replication_key = None
+                for stream in self.catalog.streams:
+                    if stream.tap_stream_id == current_sync:
+                        replication_key = stream.replication_key
+                        break
+                if replication_key:
+                    replication_key_value = state.get(replication_key)
+                    date_state = isoparse(replication_key_value)
+                    date_state = date_state + timedelta(seconds=1)
+                    date_state_str = date_state.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                    # Change replication key value since 'state[replication_key]' is reference of self.state
+                    state[replication_key] = date_state_str
+
         singer.write_state(self.state)
