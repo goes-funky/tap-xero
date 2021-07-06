@@ -43,4 +43,26 @@ This tap:
 
 ---
 
-Copyright &copy; 2017 Stitch
+## Authentication
+
+Xero uses OAuth 2.0
+protocol. [Check here authentication workflow](https://developer.xero.com/documentation/guides/oauth2/auth-flow#1-send-a-user-to-authorize-your-app)
+
+### Refreshing access tokens
+
+Access tokens expire after 30 minutes. Your app can refresh an access token without user interaction by using a refresh
+token. You get a refresh token by requesting the offline_access scope during the initial user
+authorization. [See more](https://developer.xero.com/documentation/guides/oauth2/auth-flow#refreshing-access-tokens)
+
+> Each time you **perform a token refresh**, you should **save the new refresh token returned to the response**.
+> Your existing refresh token will last for a grace period of 30 minutes. So in the end of import process you need to request a new refresh token and store it in run-time or in DB.
+
+### Frequently Asked Questions
+[Check it out here...]()
+
+## Rate limits
+
+- Uncertified apps will be limited to 25 connections.
+- API rate limits. Daily Limit: 5000 calls per
+  day. ([Details](https://developer.xero.com/documentation/guides/oauth2/limits#api-rate-limits))
+- Rate limit FAQ ([Check here](https://developer.xero.com/documentation/guides/oauth2/limits#rate-limit-faq))
