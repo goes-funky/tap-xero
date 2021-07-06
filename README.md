@@ -58,7 +58,8 @@ authorization. [See more](https://developer.xero.com/documentation/guides/oauth2
 > Your existing refresh token will last for a grace period of 30 minutes. So in the end of import process you need to request a new refresh token and store it in run-time or in DB.
 
 ### Frequently Asked Questions
-[Check it out here...]()
+
+[Check it out here...](https://developer.xero.a/faq/oauth2/)
 
 ## Rate limits
 
