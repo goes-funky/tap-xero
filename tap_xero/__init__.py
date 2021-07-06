@@ -22,17 +22,6 @@ REQUIRED_CONFIG_KEYS = [
 
 LOGGER = singer.get_logger()
 
-BAD_CREDS_MESSAGE = (
-    "Failed to refresh OAuth token using the credentials from both the config and S3. "
-    "The token might need to be reauthorized from the integration's properties "
-    "or there could be another authentication issue. Please attempt to reauthorize "
-    "the integration."
-)
-
-
-class BadCredsException(Exception):
-    pass
-
 
 def get_abs_path(path):
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), path)
@@ -74,10 +63,6 @@ def load_metadata(stream, schema):
             )
 
     return metadata.to_list(mdata)
-
-
-def ensure_credentials_are_valid(config):
-    XeroClient(config).filter("currencies")
 
 
 def discover() -> Catalog:
