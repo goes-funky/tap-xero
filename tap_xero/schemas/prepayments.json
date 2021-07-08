@@ -167,6 +167,11 @@
         "null",
         "string"
       ]
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "tap_schema_dependencies": [

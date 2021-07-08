@@ -27,6 +27,12 @@
       "type": [
         "string"
       ]
+    },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false

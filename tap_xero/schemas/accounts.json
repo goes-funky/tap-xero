@@ -10,6 +10,12 @@
         "string"
       ]
     },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "Name": {
       "type": [
         "null",

@@ -156,6 +156,11 @@
         "string"
       ]
     },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
+    },
     "LineOfBusiness": {
       "type": [
         "null",

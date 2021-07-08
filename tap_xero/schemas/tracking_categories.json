@@ -101,6 +101,11 @@
         "null",
         "string"
       ]
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "additionalProperties": false

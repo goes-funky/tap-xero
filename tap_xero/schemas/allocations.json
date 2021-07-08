@@ -24,6 +24,12 @@
     },
     "Invoice": {
       "$ref": "nested_invoice"
+    },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false,

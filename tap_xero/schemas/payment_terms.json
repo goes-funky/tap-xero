@@ -45,6 +45,11 @@
         }
       },
       "additionalProperties": false
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "additionalProperties": false

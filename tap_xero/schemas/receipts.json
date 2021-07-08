@@ -118,6 +118,11 @@
     },
     "Attachments": {
       "$ref": "attachments"
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "tap_schema_dependencies": [

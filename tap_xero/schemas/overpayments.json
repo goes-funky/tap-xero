@@ -167,6 +167,11 @@
         "string"
       ],
       "format": "date-time"
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "tap_schema_dependencies": [

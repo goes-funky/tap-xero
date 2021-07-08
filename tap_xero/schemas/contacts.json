@@ -345,6 +345,12 @@
     },
     "ValidationErrors": {
       "$ref": "validation_errors"
+    },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "tap_schema_dependencies": [

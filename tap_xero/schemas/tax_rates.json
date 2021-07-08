@@ -122,6 +122,11 @@
       "multipleOf": 1e-05,
       "exclusiveMinimum": true,
       "exclusiveMaximum": true
+    },
+    "TenantID": {
+      "type": [
+        "string"
+      ]
     }
   },
   "additionalProperties": false

@@ -9,6 +9,12 @@
         "string"
       ]
     },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "EmailAddress": {
       "type": [
         "null",

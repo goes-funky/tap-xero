@@ -63,6 +63,12 @@
         "string"
       ],
       "format": "date-time"
+    },
+    "TenantID": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false
