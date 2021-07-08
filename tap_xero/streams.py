@@ -76,6 +76,7 @@ class Stream(ABC):
         for rec in records:
             with Transformer() as transformer:
                 rec = transformer.transform(rec, schema, metadata.to_map(meta_data))
+                rec["TenantID"] = context.client.tenant_id
                 singer.write_record(self.tap_stream_id, rec)
         self.metrics(records)
 
@@ -85,7 +86,11 @@ class Stream(ABC):
 
 class BookmarkedStream(Stream):
     def sync(self, context: Context) -> None:
-        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [
+            self.tap_stream_id,
+            context.client.tenant_id,
+            self.bookmark_key,
+        ]
         start: str = context.update_start_date_bookmark(bookmark)
         records: List[dict] = _make_request(
             context, self.tap_stream_id, dict(since=start)
@@ -103,7 +108,11 @@ class PaginatedStream(Stream):
         super().__init__(*args, **kwargs)
 
     def sync(self, context: Context) -> None:
-        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [
+            self.tap_stream_id,
+            context.client.tenant_id,
+            self.bookmark_key,
+        ]
         offset = [self.tap_stream_id, "page"]
         start = context.update_start_date_bookmark(bookmark)
         curr_page_num = context.get_offset(offset) or 1
@@ -152,7 +161,11 @@ class Journals(Stream):
     https://developer.xero.com/documentation/api/journals"""
 
     def sync(self, context: Context) -> None:
-        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [
+            self.tap_stream_id,
+            context.client.tenant_id,
+            self.bookmark_key,
+        ]
         journal_number = context.get_bookmark(bookmark) or 0
         while True:
             filter_options = {"offset": journal_number}
@@ -175,7 +188,11 @@ class LinkedTransactions(Stream):
     UpdatedDateUTC property."""
 
     def sync(self, context: Context) -> None:
-        bookmark: List[str] = [self.tap_stream_id, self.bookmark_key]
+        bookmark: List[str] = [
+            self.tap_stream_id,
+            context.client.tenant_id,
+            self.bookmark_key,
+        ]
         offset: List[str] = [self.tap_stream_id, "page"]
         start = context.update_start_date_bookmark(bookmark)
         curr_page_num = context.get_offset(offset) or 1
