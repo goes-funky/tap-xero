@@ -160,6 +160,10 @@ class Journals(Stream):
     and paging the data. See
     https://developer.xero.com/documentation/api/journals"""
 
+    def __init__(self, tap_stream_id, pk_fields, bookmark_key=None, format_fn=None):
+        super().__init__(tap_stream_id, pk_fields, bookmark_key, format_fn)
+        self.replication_method = "FULL_TABLE"
+
     def sync(self, context: Context) -> None:
         bookmark: List[str] = [
             self.tap_stream_id,
@@ -256,7 +260,6 @@ all_streams: List[Stream] = [
     Journals(
         "journals",
         ["JournalID"],
-        bookmark_key="JournalNumber",
         format_fn=transform.format_journals,
     ),
     # NON-PAGINATED STREAMS
