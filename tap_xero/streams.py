@@ -177,7 +177,7 @@ class Journals(Stream):
             if records:
                 self.format_fn(records)
                 self.write_records(records, context)
-                journal_number = max((record[self.bookmark_key] for record in records))
+                journal_number = max((record['JournalNumber'] for record in records))
                 context.set_bookmark(bookmark, journal_number)
                 context.write_state()
             if not records or len(records) < FULL_PAGE_SIZE:
