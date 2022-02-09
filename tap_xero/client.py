@@ -74,6 +74,7 @@ class XeroClient:
         retry_after_wait_gen,
         XeroTooManyInMinuteError,
         giveup=is_not_status_code_fn([429]),
+        jitter=None,
         max_tries=3,
     )
     def filter(
