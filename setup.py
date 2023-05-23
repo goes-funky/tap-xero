@@ -11,7 +11,7 @@ setup(
     py_modules=["tap_xero"],
     install_requires=[
         "singer-python==5.9.0",
-        "requests==2.26.0",
+        "requests==2.31.0",
     ],
     extras_require={"dev": ["ipdb", "pylint", "nose"]},
     entry_points="""
